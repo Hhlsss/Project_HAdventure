@@ -1,0 +1,63 @@
+{
+  "__version__": "1.0.6",
+  "custom_joint_texture_layouts": [],
+  "physics": {
+    "collisionGroups": [
+      {
+        "index": 1,
+        "name": "hero"
+      },
+      {
+        "index": 2,
+        "name": "wall"
+      },
+      {
+        "index": 3,
+        "name": "ladder"
+      },
+      {
+        "index": 4,
+        "name": "npc"
+      },
+      {
+        "index": 5,
+        "name": "enemy"
+      },
+      {
+        "index": 6,
+        "name": "coins/items"
+      },
+      {
+        "index": 7,
+        "name": "attack"
+      },
+      {
+        "index": 8,
+        "name": "camera"
+      },
+      {
+        "index": 9,
+        "name": "camera wall"
+      }
+    ],
+    "collisionMatrix": {
+      "0": 1,
+      "1": 94,
+      "2": 98,
+      "3": 2,
+      "4": 2,
+      "5": 132,
+      "6": 6,
+      "7": 32
+    },
+    "gravity": {
+      "y": -17
+    }
+  },
+  "layer": [
+    {
+      "name": "UI_hud",
+      "value": 1
+    }
+  ]
+}

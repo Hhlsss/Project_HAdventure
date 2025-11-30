@@ -1,0 +1,134 @@
+{
+  "ver": "1.0.27",
+  "importer": "image",
+  "imported": true,
+  "uuid": "dad2e6c4-f94a-41db-8bd2-d6ffd0890792",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "6c48a": {
+      "importer": "texture",
+      "uuid": "dad2e6c4-f94a-41db-8bd2-d6ffd0890792@6c48a",
+      "displayName": "Soldier-Walk",
+      "id": "6c48a",
+      "name": "texture",
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "imageUuidOrDatabaseUri": "dad2e6c4-f94a-41db-8bd2-d6ffd0890792",
+        "isUuid": true,
+        "visible": false,
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "mipfilter": "none",
+        "anisotropy": 0
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f9941": {
+      "importer": "sprite-frame",
+      "uuid": "dad2e6c4-f94a-41db-8bd2-d6ffd0890792@f9941",
+      "displayName": "Soldier-Walk",
+      "id": "f9941",
+      "name": "spriteFrame",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": -0.5,
+        "offsetY": 1,
+        "trimX": 41,
+        "trimY": 38,
+        "width": 717,
+        "height": 22,
+        "rawWidth": 800,
+        "rawHeight": 100,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "packable": true,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [
+            -358.5,
+            -11,
+            0,
+            358.5,
+            -11,
+            0,
+            -358.5,
+            11,
+            0,
+            358.5,
+            11,
+            0
+          ],
+          "indexes": [
+            0,
+            1,
+            2,
+            2,
+            1,
+            3
+          ],
+          "uv": [
+            41,
+            62,
+            758,
+            62,
+            41,
+            40,
+            758,
+            40
+          ],
+          "nuv": [
+            0.05125,
+            0.4,
+            0.9475,
+            0.4,
+            0.05125,
+            0.62,
+            0.9475,
+            0.62
+          ],
+          "minPos": [
+            -358.5,
+            -11,
+            0
+          ],
+          "maxPos": [
+            358.5,
+            11,
+            0
+          ]
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "dad2e6c4-f94a-41db-8bd2-d6ffd0890792@6c48a",
+        "atlasUuid": "",
+        "trimType": "auto"
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "type": "sprite-frame",
+    "hasAlpha": true,
+    "fixAlphaTransparencyArtifacts": false,
+    "redirect": "dad2e6c4-f94a-41db-8bd2-d6ffd0890792@6c48a"
+  }
+}

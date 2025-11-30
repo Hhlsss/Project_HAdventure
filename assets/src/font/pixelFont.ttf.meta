@@ -1,0 +1,12 @@
+{
+  "ver": "1.0.1",
+  "importer": "ttf-font",
+  "imported": true,
+  "uuid": "024378e0-ecc1-42b9-9b12-04475faec2fd",
+  "files": [
+    ".json",
+    "pixelFont.ttf"
+  ],
+  "subMetas": {},
+  "userData": {}
+}
