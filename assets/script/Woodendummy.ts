@@ -86,21 +86,21 @@ export class Woodendummy extends Component {
     }
 
     public Hp_change(hpChange){
-         if(this.Enemy_currentHp+hpChange<=0){
+         if(this.Enemy_currentHp-hpChange<=0){
             this.Enemy_currentHp=0;
-            this.Hp_Remind(hpChange)
+            this.Hp_Remind(-hpChange)
             this.updateHp(); 
-        }else if(this.Enemy_currentHp+hpChange>=this._Enemy_MaxHp){
+        }else if(this.Enemy_currentHp-hpChange>=this._Enemy_MaxHp){
             this.Enemy_currentHp=this._Enemy_MaxHp;
-            this.Hp_Remind(hpChange)
+            this.Hp_Remind(-hpChange)
             this.updateHp();
         }else{
-            this.Enemy_currentHp=this.Enemy_currentHp+hpChange;
-            this.Hp_Remind(hpChange)
+            this.Enemy_currentHp=this.Enemy_currentHp-hpChange;
+            this.Hp_Remind(-hpChange)
             this.updateHp();
         }
 
-        this.node_DamageEffect(hpChange);
+        this.node_DamageEffect(-hpChange);
 
     }
 

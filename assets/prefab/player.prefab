@@ -695,10 +695,7 @@
     "HpRestorePower": 25,
     "coinsLabel": null,
     "RemindNode": null,
-    "Soul": {
-      "__uuid__": "72e0852b-b0f5-4bac-b09c-fd5b46b8497b",
-      "__expectedType__": "cc.Prefab"
-    },
+    "isStartDebug": false,
     "_id": ""
   },
   {

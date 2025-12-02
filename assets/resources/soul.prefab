@@ -45,7 +45,7 @@
     },
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 624.705,
+      "x": 949.609,
       "y": -119.101,
       "z": 0
     },
@@ -136,8 +136,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 143.96007301629226,
-      "height": 94.4
+      "width": 143.97982192674584,
+      "height": 94.39999999999999
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -175,7 +175,7 @@
     "_string": "E\n回收失去的力量",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 23.416666666666668,
+    "_actualFontSize": 21.703125,
     "_fontSize": 20,
     "_fontFamily": "Arial",
     "_lineHeight": 40,
@@ -257,8 +257,8 @@
     },
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": 0,
-      "y": 40.952,
+      "x": 12.835,
+      "y": -7.141,
       "z": 0
     },
     "_lrot": {

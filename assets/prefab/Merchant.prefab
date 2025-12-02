@@ -307,7 +307,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 118.96720609291592,
+      "width": 118.98342163876889,
       "height": 54.400000000000006
     },
     "_anchorPoint": {
@@ -346,7 +346,7 @@
     "_string": "按E打开商店",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 23.416666666666668,
+    "_actualFontSize": 21.703125,
     "_fontSize": 20,
     "_fontFamily": "Arial",
     "_lineHeight": 40,
@@ -421,7 +421,7 @@
         "__id__": 23
       }
     ],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 61

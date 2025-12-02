@@ -310,7 +310,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 78.9786138025467,
+      "width": 78.98918680255579,
       "height": 54.400000000000006
     },
     "_anchorPoint": {
@@ -349,7 +349,7 @@
     "_string": "按E休息",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 23.416666666666668,
+    "_actualFontSize": 21.703125,
     "_fontSize": 20,
     "_fontFamily": "Arial",
     "_lineHeight": 40,

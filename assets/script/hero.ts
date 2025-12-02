@@ -109,6 +109,10 @@ export class hero extends Component {
     private IsplayerAttack:boolean = false;
     private _HpIsZero:boolean = false;
     private AttackCollider:Collider2D = null;
+    private attackedEnemies: Set<Node> = new Set<Node>(); // 记录本次攻击已伤害的敌人
+    private currentAttackPhase: number = 0; // 当前攻击阶段 (0: 无, 1: 第一击, 2: 第二击)
+    private phase1AttackedEnemies: Set<Node> = new Set<Node>(); // 第一击已伤害的敌人
+    private phase2AttackedEnemies: Set<Node> = new Set<Node>(); // 第二击已伤害的敌人
     private HpRestoreNum:number = 0;
     private HpRestoreLabel:Label = null;
     @property
@@ -125,6 +129,8 @@ export class hero extends Component {
     (Label) coinsLabel:Label = null; 
     @property
     (Node) RemindNode:Node = null; 
+    @property
+    (Boolean) isStartDebug:boolean = false;
 
     //onPropertyChanged
     private player_currentEndurance:number = null;
@@ -133,7 +139,8 @@ export class hero extends Component {
     private EnduracneTimer:number = 0;
 
     protected onLoad():void{     //onload总是在start之前执行
-                
+         
+        this.IsDeBug();
         this.RemindNode.active=false;
         this.AnimationNode = this.node.getChildByName("character");
         this.AnimationCom = this.AnimationNode.getComponent(Animation);
@@ -161,7 +168,7 @@ export class hero extends Component {
             this.AttackCollider.on(Contact2DType.BEGIN_CONTACT, this.onAttackCollisionEnter, this);
             //console.log(this.AttackCollider)
             // 监听碰撞结束（END_CONTACT）
-            //this.AttackCollider.off(Contact2DType.END_CONTACT, this.onAttackCollisionExit, this);
+            this.AttackCollider.on(Contact2DType.END_CONTACT, this.onAttackCollisionExit, this);
         }
 
         this.HpChangeLabel=this.HpHudNode.getChildByName("playerHpLabel").getComponent(Label)
@@ -175,6 +182,7 @@ export class hero extends Component {
         director.on("UpMaxHp",this.upMaxHp,this)
         director.on("UpMaxEndurance",this.upMaxEndurance,this)
         director.on("UpMaxHarm",this.upMaxHarm,this)
+        director.on("player_Damage",this.Hp_change,this)
         
         this.player_CurrentHp = this.Player_MaxHp;//初始化当前血量
         
@@ -221,6 +229,12 @@ export class hero extends Component {
             this.player_Collider.off(Contact2DType.BEGIN_CONTACT, this.onCollisionEnter, this);
             // 监听碰撞结束（END_CONTACT）
             this.player_Collider.off(Contact2DType.END_CONTACT, this.onCollisionExit, this);
+        }
+
+        // 清理攻击碰撞框监听器
+        if(this.AttackCollider) {
+            this.AttackCollider.off(Contact2DType.BEGIN_CONTACT, this.onAttackCollisionEnter, this);
+            this.AttackCollider.off(Contact2DType.END_CONTACT, this.onAttackCollisionExit, this);
         }
     }
 
@@ -326,11 +340,45 @@ export class hero extends Component {
 
     private onAttackCollisionEnter(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null){//碰撞开始触发时
         if(otherCollider.tag===4){ //tag=4为敌人
-            otherCollider.node.emit("takeDamage",-this.player_AttackHarm);
+            let canDamage = false;
+            let damagePhase = 0;
             
+            // 根据当前攻击阶段判断是否能造成伤害
+            if(this.currentAttackPhase === 1) {
+                // 第一击阶段：检查是否已经在第一击中伤害过该敌人
+                if(!this.phase1AttackedEnemies.has(otherCollider.node)) {
+                    canDamage = true;
+                    damagePhase = 1;
+                    this.phase1AttackedEnemies.add(otherCollider.node);
+                    this.attackedEnemies.add(otherCollider.node);
+                    console.log("第一击伤害敌人，伤害:", this.player_AttackHarm);
+                }
+            } else if(this.currentAttackPhase === 2) {
+                // 第二击阶段：检查是否已经在第二击中伤害过该敌人
+                if(!this.phase2AttackedEnemies.has(otherCollider.node)) {
+                    canDamage = true;
+                    damagePhase = 2;
+                    this.phase2AttackedEnemies.add(otherCollider.node);
+                    this.attackedEnemies.add(otherCollider.node);
+                    console.log("第二击伤害敌人，伤害:", this.player_AttackHarm);
+                }
+            }
             
+            // 如果可以造成伤害
+            if(canDamage) {
+                // 计算击退方向
+                const knockbackDirection = this.playerSprite.scale.x > 0 ? 1 : -1;
+                
+                // 对敌人造成伤害
+                otherCollider.node.emit("takeDamage", this.player_AttackHarm, knockbackDirection);
+                console.log(`第${damagePhase}击攻击到敌人，伤害:`, this.player_AttackHarm);
+            }
         }
-        
+    }
+
+    private onAttackCollisionExit(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null) {
+        // 敌人离开攻击框时不需要特殊处理，因为我们已经按攻击阶段分别记录了伤害
+        // 这里可以添加一些额外的逻辑，比如音效等
     }
 
 
@@ -501,6 +549,12 @@ export class hero extends Component {
             // 设置攻击状态，防止重复触发
             this.IsplayerAttack = true;
             
+            // 清空所有攻击记录
+            this.attackedEnemies.clear();
+            this.phase1AttackedEnemies.clear();
+            this.phase2AttackedEnemies.clear();
+            this.currentAttackPhase = 0;
+            
             this.AnimationCom.crossFade("attack",0.01)
             this.Endurance_change(-this.Attack_Enudrance)
             
@@ -512,6 +566,7 @@ export class hero extends Component {
             this.scheduleOnce(() => {
                 if(this.AttackCollider && this.IsplayerAttack) {
                     this.AttackCollider.enabled = true;
+                    this.currentAttackPhase = 1; // 设置为第一击阶段
                     console.log("第一击攻击框启用");
                 }
             }, 0.165);
@@ -520,6 +575,7 @@ export class hero extends Component {
             this.scheduleOnce(() => {
                 if(this.AttackCollider) {
                     this.AttackCollider.enabled = false;
+                    this.currentAttackPhase = 0; // 重置攻击阶段
                     console.log("第一击攻击框禁用");
                 }
             }, 0.25);
@@ -528,6 +584,7 @@ export class hero extends Component {
             this.scheduleOnce(() => {
                 if(this.AttackCollider && this.IsplayerAttack) {
                     this.AttackCollider.enabled = true;
+                    this.currentAttackPhase = 2; // 设置为第二击阶段
                     console.log("第二击攻击框启用");
                 }
             }, 0.5);
@@ -539,6 +596,12 @@ export class hero extends Component {
                     console.log("攻击结束，攻击框禁用");
                 }
                 this.IsplayerAttack = false;
+                this.currentAttackPhase = 0; // 重置攻击阶段
+                
+                // 清空攻击记录，为下次攻击做准备
+                this.attackedEnemies.clear();
+                this.phase1AttackedEnemies.clear();
+                this.phase2AttackedEnemies.clear();
                 
                 // 攻击结束后才根据当前状态切换到合适的动画
                 if(this.isOnGround && !(this.Player_Move.a||this.Player_Move.d))
@@ -577,11 +640,16 @@ export class hero extends Component {
 
     private player_dead(){
         const deadPos=this.node.getPosition();
+        deadPos.y+=40
         director.off("addCoins",this.coinsChange,this);
         input.off(Input.EventType.KEY_DOWN,this.Key_Down,this)
         input.off(Input.EventType.KEY_UP,this.Key_up,this)
+        //this.node.
 
-        director.emit("DestorySoul")
+        //const velocity = this.rigidBody.linearVelocity;
+        // const direction=new Vec2(0,0)
+        // direction.normalize();
+        // this.rigidBody.linearVelocity=direction.multiplyScalar(0)
         const Go:Node=this.node.getChildByName("GameOver");
         let startPos = Go.getPosition();
         Go.active=true
@@ -592,6 +660,7 @@ export class hero extends Component {
 
         this.scheduleOnce(()=>{
             resources.load("soul",Prefab,(err,prefab)=>{
+                director.emit("DestorySoul")
                 const soulNode = instantiate(prefab)
                 soulNode.getComponent(soul).coins = this.coins
                 this.coinsChange(-this.coins)
@@ -768,6 +837,16 @@ export class hero extends Component {
         }
     }
 
+    private IsDeBug(){
+        if(this.isStartDebug==false) return;
+        else{
+            PhysicsSystem2D.instance.debugDrawFlags = EPhysics2DDrawFlags.Aabb |
+            EPhysics2DDrawFlags.Pair |
+            EPhysics2DDrawFlags.CenterOfMass |
+            EPhysics2DDrawFlags.Joint |
+            EPhysics2DDrawFlags.Shape;
+        }
+    }
 
 
     start() {
