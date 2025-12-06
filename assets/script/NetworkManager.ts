@@ -1,11 +1,14 @@
 import { _decorator, Component, Node, instantiate, Prefab, resources, Vec3, color, Sprite, director } from 'cc';
 import { hero } from './hero';
 import { RoomUI } from './RoomUI';
+import { ChatSystem } from './ChatSystem';
 const { ccclass, property } = _decorator;
 
 declare global {
     interface Window {
         WebSocket: typeof WebSocket;
+        networkManager: NetworkManager;
+        chatSystem: ChatSystem;
     }
 }
 
@@ -25,8 +28,16 @@ export class NetworkManager extends Component {
     private positionUpdateInterval: number = 10; // 10ms更新一次位置
     private lastUpdateTime: number = 0;
     private hasUserAttemptedConnection: boolean = false; // 标记用户是否已尝试连接服务器
+    private chatSystem: ChatSystem | null = null; // 聊天系统组件
+    
+    // 添加全局引用，方便调试
+    public static instance: NetworkManager | null = null;
 
     start() {
+        // 设置全局引用，方便调试
+        NetworkManager.instance = this;
+        window.networkManager = this; // 添加到全局窗口对象，方便调试
+        
         // 游戏启动时不自动连接服务器
         // 只有在玩家点击 Host 或 Join 按钮时才连接服务器
         console.log('游戏已启动，当前为单机模式');
@@ -128,8 +139,16 @@ export class NetworkManager extends Component {
             };
 
             this.ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                this.handleServerMessage(data);
+                console.log('=== NetworkManager 收到WebSocket消息 ===');
+                console.log('原始消息数据:', event.data);
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('解析后的数据:', data);
+                    this.handleServerMessage(data);
+                } catch (error) {
+                    console.error('解析WebSocket消息时出错:', error);
+                }
+                console.log('=== NetworkManager WebSocket消息处理完毕 ===');
             };
 
             this.ws.onclose = (event) => {
@@ -186,6 +205,9 @@ export class NetworkManager extends Component {
                 
                 // 通知UI组件
                 this.notifyRoomUI('room_created', data.roomId);
+                
+                // 启用聊天系统
+                this.enableChatSystem();
                 break;
 
             case 'room_joined':
@@ -199,6 +221,9 @@ export class NetworkManager extends Component {
                 
                 // 通知UI组件
                 this.notifyRoomUI('room_joined', data.roomId, data.isHost);
+                
+                // 启用聊天系统
+                this.enableChatSystem();
                 break;
 
             case 'room_not_found':
@@ -273,6 +298,16 @@ export class NetworkManager extends Component {
             case 'player_left':
                 console.log(`👋 玩家离开: ${data.playerId}`);
                 this.removeOtherPlayer(data.playerId);
+                break;
+                
+            case 'chat_message':
+                console.log('=== NetworkManager 收到聊天消息 ===');
+                console.log(`玩家ID: ${data.playerId}`);
+                console.log(`消息内容: ${data.message}`);
+                console.log(`完整数据:`, data);
+                console.log('chatSystem 状态:', !!this.chatSystem);
+                this.handleChatMessage(data.playerId, data.message);
+                console.log('=== NetworkManager 聊天消息处理完毕 ===');
                 break;
         }
     }
@@ -537,6 +572,49 @@ export class NetworkManager extends Component {
         this.ws.send(JSON.stringify(message));
     }
 
+    // 发送聊天消息
+    sendChatMessage(message: string) {
+        console.log('=== NetworkManager 发送聊天消息 ===');
+        console.log('连接状态:', this.isConnected);
+        console.log('WebSocket状态:', this.ws ? this.ws.readyState : 'null');
+        console.log('原始消息:', message);
+        console.log('玩家ID:', this.playerId);
+        
+        if (!message || message.trim() === '') {
+            console.log('消息为空，不发送');
+            return;
+        }
+
+        // 不再在这里显示消息，由ChatSystem自己处理
+        // 这样避免了消息显示两次的问题
+
+        if (!this.isConnected) {
+            console.error('未连接到服务器，无法发送消息到其他玩家');
+            return;
+        }
+        
+        if (!this.ws) {
+            console.error('WebSocket为空，无法发送消息');
+            return;
+        }
+
+        const chatMessage = {
+            type: 'chat_message',
+            message: message.trim()
+        };
+        
+        console.log('发送的消息数据:', chatMessage);
+        
+        try {
+            this.ws.send(JSON.stringify(chatMessage));
+            console.log('消息已发送到服务器');
+        } catch (error) {
+            console.error('发送消息时出错:', error);
+        }
+        
+        console.log('=== NetworkManager 发送聊天消息完毕 ===');
+    }
+
     // 创建房间
     createRoom() {
         // 标记用户已尝试连接服务器
@@ -640,6 +718,9 @@ export class NetworkManager extends Component {
         
         // 隐藏本地玩家昵称
         this.hideLocalPlayerNickname();
+        
+        // 禁用聊天系统
+        this.disableChatSystem();
         
         // 清理其他玩家
         this.otherPlayers.forEach((player, playerId) => {
@@ -877,6 +958,174 @@ export class NetworkManager extends Component {
         }
     }
 
+    // 处理聊天消息
+    private handleChatMessage(playerId: string, message: string) {
+        console.log('=== NetworkManager 处理聊天消息 ===');
+        console.log('玩家ID:', playerId);
+        console.log('消息内容:', message);
+        console.log('当前 chatSystem 状态:', !!this.chatSystem);
+        
+        // 获取聊天系统组件
+        if (!this.chatSystem) {
+            console.log('NetworkManager: chatSystem为空，尝试获取');
+            this.getChatSystem();
+            console.log('获取后的 chatSystem 状态:', !!this.chatSystem);
+        }
+        
+        if (this.chatSystem) {
+            console.log('NetworkManager: 准备调用chatSystem.receiveMessage');
+            console.log('chatSystem.isInRoom 状态:', this.chatSystem.isInRoom);
+            
+            // 只显示来自其他玩家的消息，不显示自己的消息
+            // 自己的消息已经在ChatSystem.sendMessage()中显示过了
+            if (playerId !== this.playerId) {
+                console.log('接收来自其他玩家的消息，显示在聊天框');
+                this.chatSystem.receiveMessage(playerId, message);
+            } else {
+                console.log('接收来自自己的消息，跳过显示（已在发送时显示）');
+            }
+            console.log('NetworkManager: chatSystem.receiveMessage 调用完成');
+        } else {
+            console.error('NetworkManager: 无法获取chatSystem组件');
+        }
+        console.log('=== NetworkManager 聊天消息处理完毕 ===');
+    }
+    
+    // 获取聊天系统组件
+    private getChatSystem() {
+        // 如果已经有引用，直接返回
+        if (this.chatSystem) {
+            return;
+        }
+        
+        console.log('NetworkManager: 开始查找ChatSystem组件');
+        
+        // 从场景中查找聊天系统组件
+        const scene = director.getScene();
+        if (scene) {
+            // 尝试多种路径查找chat节点
+            const canvasNode = scene.getChildByName('Canvas');
+            if (canvasNode) {
+                // 路径1: Canvas -> ui_hud -> uiCamera -> chat
+                const uiHudNode = canvasNode.getChildByName('ui_hud');
+                if (uiHudNode) {
+                    console.log('NetworkManager: 找到ui_hud节点');
+                    const uiCameraNode = uiHudNode.getChildByName('uiCamera');
+                    if (uiCameraNode) {
+                        console.log('NetworkManager: 找到uiCamera节点');
+                        const chatNode = uiCameraNode.getChildByName('chat');
+                        if (chatNode) {
+                            console.log('NetworkManager: 找到chat节点');
+                            this.chatSystem = chatNode.getComponent(ChatSystem);
+                            if (this.chatSystem) {
+                                console.log('从路径1找到ChatSystem组件');
+                                return;
+                            }
+                        } else {
+                            console.log('NetworkManager: chat节点不存在');
+                        }
+                    } else {
+                        console.log('NetworkManager: uiCamera节点不存在');
+                    }
+                }
+                
+                // 路径2: Canvas -> ui_hud -> chat
+                if (!this.chatSystem && uiHudNode) {
+                    console.log('NetworkManager: 尝试路径2');
+                    const chatNode = uiHudNode.getChildByName('chat');
+                    if (chatNode) {
+                        console.log('NetworkManager: 从路径2找到chat节点');
+                        this.chatSystem = chatNode.getComponent(ChatSystem);
+                        if (this.chatSystem) {
+                            console.log('从路径2找到ChatSystem组件');
+                            return;
+                        }
+                    } else {
+                        console.log('NetworkManager: 路径2中的chat节点不存在');
+                    }
+                }
+                
+                // 路径3: 直接检查ui_hud的所有子节点，查找包含ChatSystem组件的节点
+                if (!this.chatSystem && uiHudNode) {
+                    console.log('NetworkManager: 尝试路径3，检查ui_hud的所有子节点');
+                    for (const child of uiHudNode.children) {
+                        const chatSystem = child.getComponent(ChatSystem);
+                        if (chatSystem) {
+                            this.chatSystem = chatSystem;
+                            console.log('从路径3找到ChatSystem组件，节点名:', child.name);
+                            return;
+                        }
+                    }
+                }
+            } else {
+                console.log('NetworkManager: Canvas节点不存在');
+            }
+            
+            // 如果还是找不到，尝试从全局查找任何包含ChatSystem组件的节点
+            if (!this.chatSystem) {
+                console.log('NetworkManager: 尝试递归查找ChatSystem组件');
+                const result = this.findChatSystemRecursively(scene);
+                if (result) {
+                    this.chatSystem = result;
+                    console.log('从场景中递归找到ChatSystem组件');
+                }
+            }
+        }
+        
+        if (!this.chatSystem) {
+            console.warn('未找到ChatSystem组件');
+        }
+    }
+    
+    // 递归查找ChatSystem组件
+    private findChatSystemRecursively(node: Node): ChatSystem | null {
+        // 检查当前节点
+        const chatSystem = node.getComponent(ChatSystem);
+        if (chatSystem) {
+            return chatSystem;
+        }
+        
+        // 递归检查子节点
+        if (node.children) {
+            for (const child of node.children) {
+                const result = this.findChatSystemRecursively(child);
+                if (result) {
+                    return result;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    // 启用聊天系统
+    private enableChatSystem() {
+        console.log('NetworkManager: 尝试启用聊天系统');
+        // 获取聊天系统组件
+        if (!this.chatSystem) {
+            this.getChatSystem();
+        }
+        
+        if (this.chatSystem) {
+            console.log('NetworkManager: 找到聊天系统组件，调用enableChat');
+            this.chatSystem.enableChat();
+        } else {
+            console.error('NetworkManager: 无法找到聊天系统组件');
+        }
+    }
+    
+    // 禁用聊天系统
+    private disableChatSystem() {
+        // 获取聊天系统组件
+        if (!this.chatSystem) {
+            this.getChatSystem();
+        }
+        
+        if (this.chatSystem) {
+            this.chatSystem.disableChat();
+        }
+    }
+
     onDestroy() {
         if (this.ws) {
             this.ws.close();
@@ -888,5 +1137,6 @@ export class NetworkManager extends Component {
         this.playerId = '';
         this.roomId = null;
         this.hasUserAttemptedConnection = false;
+        this.chatSystem = null;
     }
 }

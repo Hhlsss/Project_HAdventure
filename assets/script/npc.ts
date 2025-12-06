@@ -74,7 +74,7 @@ export class npc extends Component {
             input.on(Input.EventType.KEY_DOWN,this.Key_Down,this)
             this.DialogueNode.active=true
             this.isAroundHero=true;
-            console.log("this.isAroundHero="+this.isAroundHero);
+            //console.log("this.isAroundHero="+this.isAroundHero);
         }
         
     }
@@ -85,7 +85,7 @@ export class npc extends Component {
             this.DialogueLabel.string="按E开始对话";
             this.DialogueNode.active=false
             this.isAroundHero=false;
-            console.log("this.isAroundHero="+this.isAroundHero);
+            //console.log("this.isAroundHero="+this.isAroundHero);
         }
     }
 

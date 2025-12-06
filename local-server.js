@@ -247,6 +247,40 @@ wss.on('connection', (ws) => {
                         });
                     }
                     break;
+                    
+                case 'chat_message':
+                    // 只在同一房间内广播聊天消息
+                    console.log('=== 服务器处理聊天消息 ===');
+                    console.log('玩家ID:', playerId);
+                    console.log('玩家信息:', playerInfo);
+                    console.log('消息数据:', data);
+                    
+                    if (playerInfo && playerInfo.roomId && data.message) {
+                        console.log(`💬 房间 ${playerInfo.roomId} - ${playerId}: ${data.message}`);
+                        const room = rooms.get(playerInfo.roomId);
+                        console.log('房间信息:', room);
+                        console.log('房间内玩家数量:', room ? room.players.size : 0);
+                        
+                        const chatMessage = {
+                            type: 'chat_message',
+                            playerId: playerId,
+                            message: data.message
+                        };
+                        console.log('准备广播的消息:', chatMessage);
+                        
+                        // 修改：也发送给发送者自己，确保所有人的聊天框都能显示消息
+                        broadcastToRoomIncludingSender(playerInfo.roomId, chatMessage);
+                        console.log('消息已广播到房间（包括发送者）');
+                    } else {
+                        console.log('聊天消息处理失败:', {
+                            hasPlayerInfo: !!playerInfo,
+                            hasRoomId: !!(playerInfo && playerInfo.roomId),
+                            hasMessage: !!data.message,
+                            roomId: playerInfo ? playerInfo.roomId : 'null'
+                        });
+                    }
+                    console.log('=== 服务器聊天消息处理完毕 ===');
+                    break;
             }
         } catch (error) {
             console.error('消息处理错误:', error);
@@ -344,19 +378,75 @@ function broadcastToOthers(excludePlayerId, message) {
 
 // 广播给房间内的其他玩家
 function broadcastToRoom(roomId, excludePlayerId, message) {
-    const room = rooms.get(roomId);
-    if (!room) return;
+    console.log('=== broadcastToRoom 开始 ===');
+    console.log('房间ID:', roomId);
+    console.log('排除的玩家ID:', excludePlayerId);
+    console.log('消息内容:', message);
     
+    const room = rooms.get(roomId);
+    if (!room) {
+        console.log('房间不存在:', roomId);
+        console.log('=== broadcastToRoom 结束 ===');
+        return;
+    }
+    
+    console.log('房间存在，玩家数量:', room.players.size);
     const messageStr = JSON.stringify(message);
+    console.log('序列化后的消息:', messageStr);
+    
+    let sentCount = 0;
     room.players.forEach(client => {
         if (client.id !== excludePlayerId && client.ws.readyState === WebSocket.OPEN) {
             try {
                 client.ws.send(messageStr);
+                sentCount++;
+                console.log(`消息已发送给玩家: ${client.id}`);
             } catch (error) {
                 console.error('房间广播消息失败:', error);
             }
+        } else {
+            console.log(`跳过玩家: ${client.id}, 状态: ${client.ws.readyState}, 是否为发送者: ${client.id === excludePlayerId}`);
         }
     });
+    
+    console.log(`消息已发送给 ${sentCount} 个玩家`);
+    console.log('=== broadcastToRoom 结束 ===');
+}
+
+// 广播给房间内所有玩家（包括发送者）
+function broadcastToRoomIncludingSender(roomId, message) {
+    console.log('=== broadcastToRoomIncludingSender 开始 ===');
+    console.log('房间ID:', roomId);
+    console.log('消息内容:', message);
+    
+    const room = rooms.get(roomId);
+    if (!room) {
+        console.log('房间不存在:', roomId);
+        console.log('=== broadcastToRoomIncludingSender 结束 ===');
+        return;
+    }
+    
+    console.log('房间存在，玩家数量:', room.players.size);
+    const messageStr = JSON.stringify(message);
+    console.log('序列化后的消息:', messageStr);
+    
+    let sentCount = 0;
+    room.players.forEach(client => {
+        if (client.ws.readyState === WebSocket.OPEN) {
+            try {
+                client.ws.send(messageStr);
+                sentCount++;
+                console.log(`消息已发送给玩家: ${client.id}`);
+            } catch (error) {
+                console.error('房间广播消息失败:', error);
+            }
+        } else {
+            console.log(`跳过玩家: ${client.id}, 状态: ${client.ws.readyState}`);
+        }
+    });
+    
+    console.log(`消息已发送给 ${sentCount} 个玩家`);
+    console.log('=== broadcastToRoomIncludingSender 结束 ===');
 }
 
 // 生成房间号
