@@ -10,7 +10,6 @@ export class hpRestore extends Component {
     //private _audioSource:AudioSource=null;
 
     protected onLoad(): void {
-    console.log("1231231231231232")
             //const audioSource = this.node.getComponent(AudioSource)!;
             //assert(audioSource);
             //this._audioSource = audioSource;
@@ -29,7 +28,6 @@ export class hpRestore extends Component {
                 //console.log("开始监听collider2d")
             }
 
-        console.log("1231231231231232")
     }
          
     protected onDestroy(): void {

@@ -1,7 +1,28 @@
 {
-  "name": "demo_2",
-  "uuid": "fa40f756-65b5-459a-833f-3041cccd7629",
+  "name": "hadventure-multiplayer-server",
+  "version": "1.0.0",
+  "description": "《小H的冒险》局域网联机服务器",
+  "main": "local-server.js",
+  "scripts": {
+    "start": "node local-server.js",
+    "dev": "node local-server.js"
+  },
+  "keywords": [
+    "game",
+    "multiplayer",
+    "websocket",
+    "cocos-creator"
+  ],
+  "author": "HAdventure",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^8.14.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "creator": {
     "version": "3.8.7"
-  }
+  },
+  "uuid": "34946b2d-c7e8-4cde-b152-d8971405eb25"
 }

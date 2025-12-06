@@ -1,4 +1,4 @@
-import { _decorator, Animation, animation, BoxCollider2D, CCInteger, Collider2D, color, Component, Contact2DType, director, Font, input, Input, instantiate, IPhysics2DContact, Label, math, Node, Prefab, ProgressBar, randomRange, RigidBody2D, Scene, Sprite, tween, UIOpacity, Vec2, Vec3 } from 'cc';
+import { _decorator, Animation, animation, BoxCollider2D, CCInteger, Collider2D, color, Component, Contact2DType, director, Font, input, Input, instantiate, IPhysics2DContact, Label, math, Node, Prefab, ProgressBar, randomRange, resources, RigidBody2D, Scene, Sprite, tween, UIOpacity, Vec2, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 // 敌人动画状态枚举
@@ -492,6 +492,15 @@ private die(): void {
         this.playAnimation(EnemyAnimationState.DEAD);
     }
     
+    resources.load("rebirth",Prefab,(err,prefab)=>{
+        const rebirthNode = instantiate(prefab)
+        const pos=this.node.getPosition()
+        const parent = this.node.getParent()
+        rebirthNode.setPosition(pos)
+        parent.addChild(rebirthNode)
+    })
+
+
     // 淡出效果
     const enemyUIOpacity = this.node.addComponent(UIOpacity);
     tween(enemyUIOpacity)
@@ -501,6 +510,8 @@ private die(): void {
             this.node.destroy();
         })
         .start();
+
+        
 }
 
 // 掉落物品

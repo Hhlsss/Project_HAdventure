@@ -1,0 +1,22 @@
+{
+  "defaultServerIP": "localhost",
+  "serverPort": 7457,
+  "connectionTimeout": 5000,
+  "reconnectInterval": 5000,
+  "positionUpdateInterval": 10,
+  "knownIPs": [
+    "localhost",
+    "127.0.0.1",
+    "192.168.1.115",
+    "192.168.0.115"
+  ],
+  "instructions": {
+    "title": "网络连接问题解决",
+    "steps": [
+      "确保服务器已启动",
+      "在游戏中按'I'键设置服务器IP",
+      "或者使用ip-detection.html工具自动检测",
+      "如果IP经常变化，考虑设置静态IP"
+    ]
+  }
+}

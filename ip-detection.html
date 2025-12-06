@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《小H的冒险》服务器IP检测工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .ip-list {
+            margin: 20px 0;
+        }
+        .ip-item {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .ip-item button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .ip-item button:hover {
+            background-color: #2980b9;
+        }
+        .instructions {
+            background-color: #e7f3fe;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .loading {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>《小H的冒险》服务器IP检测工具</h1>
+        
+        <div class="instructions">
+            <h3>使用说明：</h3>
+            <ol>
+                <li>确保服务器已在cmd目录中运行（运行启动服务器.bat）</li>
+                <li>点击"测试IP地址"按钮，找到可用的服务器IP</li>
+                <li>在游戏中按"I"键，输入找到的IP地址</li>
+                <li>重新尝试连接服务器</li>
+            </ol>
+            <p><strong>注意：</strong> 如果您的IP地址经常变化，您可能需要每次重新设置IP。</p>
+        </div>
+        
+        <div class="ip-list">
+            <div class="ip-item">
+                <strong>本地测试：</strong> localhost
+                <button onclick="testConnection('localhost')">测试IP地址</button>
+                <button onclick="copyToClipboard('localhost')">复制IP</button>
+            </div>
+            
+            <div class="ip-item">
+                <strong>本地环回：</strong> 127.0.0.1
+                <button onclick="testConnection('127.0.0.1')">测试IP地址</button>
+                <button onclick="copyToClipboard('127.0.0.1')">复制IP</button>
+            </div>
+            
+            <div class="ip-item">
+                <strong>常见内网IP：</strong> 192.168.1.115
+                <button onclick="testConnection('192.168.1.115')">测试IP地址</button>
+                <button onclick="copyToClipboard('192.168.1.115')">复制IP</button>
+            </div>
+            
+            <div class="ip-item">
+                <strong>常见内网IP：</strong> 192.168.0.115
+                <button onclick="testConnection('192.168.0.115')">测试IP地址</button>
+                <button onclick="copyToClipboard('192.168.0.115')">复制IP</button>
+            </div>
+        </div>
+        
+        <div class="ip-list">
+            <h3>检测到的本机IP地址：</h3>
+            <div id="localIPs">
+                <p>正在检测中...</p>
+            </div>
+        </div>
+        
+        <div class="status" id="status">
+            <p id="statusMessage"></p>
+        </div>
+    </div>
+
+    <script>
+        // 检测本地IP地址
+        function detectLocalIPs() {
+            const ipsDiv = document.getElementById('localIPs');
+            ipsDiv.innerHTML = '<p>正在检测中...</p>';
+            
+            // 使用RTCPeerConnection获取本地IP
+            const rtcPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection;
+            if (!rtcPeerConnection) {
+                ipsDiv.innerHTML = '<p>无法自动检测IP地址（浏览器不支持）</p>';
+                return;
+            }
+            
+            const pc = new rtcPeerConnection({ iceServers: [] });
+            const ips = [];
+            
+            pc.createDataChannel('');
+            pc.createOffer().then(offer => pc.setLocalDescription(offer))
+                .catch(error => console.error('创建offer失败:', error));
+            
+            pc.onicecandidate = (ice) => {
+                if (!ice.candidate || ips.length > 0) return;
+                
+                // 解析IP地址
+                const candidate = ice.candidate.candidate;
+                const ipMatch = candidate.match(/(\d+\.\d+\.\d+\.\d+)/);
+                
+                if (ipMatch && ipMatch[1]) {
+                    const ip = ipMatch[1];
+                    
+                    // 只显示内网IP
+                    if (ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.')) {
+                        ips.push(ip);
+                        
+                        // 显示检测到的IP
+                        ipsDiv.innerHTML = '';
+                        ips.forEach(detectedIP => {
+                            const ipItem = document.createElement('div');
+                            ipItem.className = 'ip-item';
+                            ipItem.innerHTML = `
+                                <strong>检测到的IP：</strong> ${detectedIP}
+                                <button onclick="testConnection('${detectedIP}')">测试IP地址</button>
+                                <button onclick="copyToClipboard('${detectedIP}')">复制IP</button>
+                            `;
+                            ipsDiv.appendChild(ipItem);
+                        });
+                    }
+                }
+            };
+        }
+        
+        // 测试连接
+        function testConnection(ip) {
+            const status = document.getElementById('status');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            status.style.display = 'block';
+            status.className = 'status loading';
+            statusMessage.textContent = `正在测试 ${ip}:7457...`;
+            
+            try {
+                const ws = new WebSocket(`ws://${ip}:7457`);
+                
+                ws.onopen = () => {
+                    status.className = 'status success';
+                    statusMessage.textContent = `✅ 成功连接到服务器 ${ip}:7457！这个IP地址可以使用。`;
+                    
+                    // 自动复制到剪贴板
+                    copyToClipboard(ip);
+                    
+                    // 自动保存到localStorage
+                    localStorage.setItem('customServerIP', ip);
+                    
+                    // 3秒后关闭连接
+                    setTimeout(() => {
+                        ws.close();
+                        statusMessage.textContent += ' (连接已关闭)';
+                    }, 3000);
+                };
+                
+                ws.onerror = () => {
+                    status.className = 'status error';
+                    statusMessage.textContent = `❌ 无法连接到服务器 ${ip}:7457。请检查服务器是否运行，或尝试其他IP地址。`;
+                };
+                
+                ws.onclose = () => {
+                    if (status.className.includes('loading')) {
+                        status.className = 'status error';
+                        statusMessage.textContent = `❌ 连接到服务器 ${ip}:7457 被关闭。`;
+                    }
+                };
+                
+                // 设置超时
+                setTimeout(() => {
+                    if (ws.readyState === WebSocket.CONNECTING) {
+                        ws.close();
+                        status.className = 'status error';
+                        statusMessage.textContent = `❌ 连接到服务器 ${ip}:7457 超时。`;
+                    }
+                }, 5000);
+                
+            } catch (error) {
+                status.className = 'status error';
+                statusMessage.textContent = `❌ 创建连接到 ${ip}:7457 失败: ${error.message}`;
+            }
+        }
+        
+        // 复制到剪贴板
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // 显示复制成功的提示
+                const originalTitle = document.title;
+                document.title = `已复制: ${text}`;
+                setTimeout(() => {
+                    document.title = originalTitle;
+                }, 2000);
+            }).catch(err => {
+                console.error('复制到剪贴板失败:', err);
+            });
+        }
+        
+        // 页面加载时检测本地IP
+        window.onload = () => {
+            detectLocalIPs();
+        };
+    </script>
+</body>
+</html>
