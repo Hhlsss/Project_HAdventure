@@ -535,7 +535,7 @@ private dropItems(): void {
 private applyKnockback(knockbackDirection: number): void {
     if (!this.rigidBody) return;
     
-    const knockbackForce = new Vec2(knockbackDirection * 2, 8);
+    const knockbackForce = new Vec2(knockbackDirection * 8, 8);
     this.rigidBody.linearVelocity = knockbackForce;
 }
 

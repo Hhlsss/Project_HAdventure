@@ -116,7 +116,7 @@ export class ChatSystem extends Component {
     onDestroy() {
         // 清理事件监听
         if (this.sendButton) {
-            this.sendButton.node.off(Button.EventType.CLICK, this.sendMessage, this);
+            //this.sendButton.node.off(Button.EventType.CLICK, this.sendMessage, this);
         }
         
         if (this.chatInput) {
@@ -299,7 +299,8 @@ export class ChatSystem extends Component {
         console.log('聊天系统: 发送消息', message);
         
         // 先在本地聊天框中显示消息
-        this.receiveMessage(this.playerId || "我", message);
+        const localPlayerId = this.getLocalPlayerId() || "我";
+        this.receiveMessage(localPlayerId, message);
         
         // 发送到服务器
         this.networkManager.sendChatMessage(message);

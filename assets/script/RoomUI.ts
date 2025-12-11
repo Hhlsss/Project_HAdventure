@@ -93,17 +93,17 @@ export class RoomUI extends Component {
 
     onDestroy() {
         // 清理事件监听
-        if (this.hostButton) {
-            this.hostButton.node.off(Button.EventType.CLICK, this.onHostClicked, this);
-        }
+        // if (this.hostButton && this.hostButton.node.active==true) {
+        //     this.hostButton.node.off(Button.EventType.CLICK, this.onHostClicked, this);
+        // }
 
-        if (this.joinButton) {
-            this.joinButton.node.off(Button.EventType.CLICK, this.onJoinClicked, this);
-        }
+        // if (this.joinButton && this.joinButton.node.active==true) {
+        //     this.joinButton.node.off(Button.EventType.CLICK, this.onJoinClicked, this);
+        // }
 
-        if (this.roomInput) {
-            this.roomInput.node.off('editing-did-ended', this.onJoinClicked, this);
-        }
+        // if (this.roomInput && this.roomInput.node.active==true) {
+        //     this.roomInput.node.off('editing-did-ended', this.onJoinClicked, this);
+        // }
     }
 
     // 创建房间按钮点击事件

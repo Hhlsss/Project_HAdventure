@@ -974,7 +974,7 @@ export class NetworkManager extends Component {
         
         if (this.chatSystem) {
             console.log('NetworkManager: 准备调用chatSystem.receiveMessage');
-            console.log('chatSystem.isInRoom 状态:', this.chatSystem.isInRoom);
+            // 不直接访问私有属性，只检查组件是否存在
             
             // 只显示来自其他玩家的消息，不显示自己的消息
             // 自己的消息已经在ChatSystem.sendMessage()中显示过了

@@ -62,7 +62,7 @@ export class hpRestore extends Component {
                 
             //金币消失的动画
             tween(this.node)
-            .to(0.1,{scale:new Vec3(0,0.5)})
+            .to(0.1,{scale:new Vec3(0,8)})
             .call(()=>{
                 this.node.destroy()
             }).start()

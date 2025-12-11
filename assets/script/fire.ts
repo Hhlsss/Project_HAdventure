@@ -115,10 +115,10 @@ export class fire extends Component {
         this.Collider.off(Contact2DType.BEGIN_CONTACT, this.onCollisionEnter, this);
                         // 监听碰撞持续（STAY_CONTACT）
         this.Collider.off(Contact2DType.END_CONTACT, this.onCollisionExit, this);
-        this.BtnFullHp.node.off(Button.EventType.CLICK,this.onBtnFullHp,this)
-            this.Btn_1.node.off(Button.EventType.CLICK,this.onBtn_1,this)
-            this.Btn_2.node.off(Button.EventType.CLICK,this.onBtn_2,this)
-            this.Btn_3.node.off(Button.EventType.CLICK,this.onBtn_3,this)
+        //if(this.BtnFullHp)    this.BtnFullHp.node.off(Button.EventType.CLICK,this.onBtnFullHp,this)
+        //if(this.Btn_1)    this.Btn_1.node.off(Button.EventType.CLICK,this.onBtn_1,this)
+        //if(this.Btn_2)    this.Btn_2.node.off(Button.EventType.CLICK,this.onBtn_2,this)
+        //if(this.Btn_3)    this.Btn_3.node.off(Button.EventType.CLICK,this.onBtn_3,this)
             input.off(Input.EventType.KEY_DOWN,this.Key_Down,this)
     }
     

@@ -58,6 +58,7 @@ export class soul extends Component {
     Key_Down(Key){
         if(Key.keyCode==69 && this.isAroundHero==true){
             director.emit("addCoins",this.coins)
+            director.emit("UIMessage","已取回失去的力量")
             this.DestorySelf();
         }
     }

@@ -263,6 +263,7 @@ export class hero extends Component {
             director.on("player_Damage",this.Hp_change,this)
             this.node.on("player_Damage",this.Hp_change,this)
             this.node.on("UIMessage",this.RemindString,this)
+            director.on("UIMessage",this.RemindString,this)
             
             // 初始化数值
             this.player_CurrentHp = this.Player_MaxHp;
@@ -309,6 +310,7 @@ export class hero extends Component {
         director.off("player_Damage",this.Hp_change,this)
         this.node.off("player_Damage",this.Hp_change,this)
         this.node.off("UIMessage",this.RemindString,this)
+        director.off("UIMessage",this.RemindString,this)
         input.off(Input.EventType.KEY_DOWN,this.Key_Down,this)
         input.off(Input.EventType.KEY_UP,this.Key_up,this)
 
@@ -801,6 +803,8 @@ export class hero extends Component {
             this.node.setPosition(this._ReSpawnPos)
             this.Hp_change(this.Player_MaxHp);
             director.on("addCoins",this.coinsChange,this);
+            director.emit("复活吧！我的爱人！");
+            //
             input.on(Input.EventType.KEY_DOWN,this.Key_Down,this)
             input.on(Input.EventType.KEY_UP,this.Key_up,this)
         },2)
@@ -820,7 +824,7 @@ export class hero extends Component {
     private updateHp(){
         // 添加空值检查，防止网络玩家组件初始化不完整导致的错误
         if (this.HpHudLabel) {
-            this.HpHudLabel.string=this.player_CurrentHp+"/"+this.Player_MaxHp+"   测试：'1'加血，'2'扣血"
+            this.HpHudLabel.string=this.player_CurrentHp+"/"+this.Player_MaxHp//+"   测试：'1'加血，'2'扣血"
         }
         if (this.HpProgressBar) {
             this.HpProgressBar.progress=this.player_CurrentHp/this.Player_MaxHp;
@@ -1191,11 +1195,11 @@ export class hero extends Component {
         const p=this.HpRestore.getChildByName("hpRestore")
 
         tween(p)
-        .to(0.3,{scale:new Vec3(0.15,0.15)})
+        .to(0.3,{scale:new Vec3(4,4)})
         .start();
 
         tween(p)
-        .to(0.2,{scale:new Vec3(0.1,0.1)})
+        .to(0.2,{scale:new Vec3(3,3)})
         .start();
     }
     

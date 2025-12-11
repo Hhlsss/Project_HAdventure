@@ -67,7 +67,7 @@ export class test_0 extends Component {
 
     onSceneBtn(){
         console.log("点击按钮事件");
-        director.loadScene("demo_初始场景");
+        director.loadScene("level_0");
     }
 
     Key_Down(key){

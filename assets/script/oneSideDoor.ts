@@ -25,19 +25,19 @@ export class oneSideDoor extends Component {
     protected onDestroy(): void {
         if(this.colliderOther){
             // 监听碰撞开始（BEGIN_CONTACT）
-            this.colliderOther.on(Contact2DType.BEGIN_CONTACT, this.onCollisionOtherEnter, this);      
+            this.colliderOther.off(Contact2DType.BEGIN_CONTACT, this.onCollisionOtherEnter, this);      
             // 监听碰撞结束（END_CONTACT）            
-            this.colliderOther.on(Contact2DType.END_CONTACT, this.onCollisionOtherExit, this);            
+            this.colliderOther.off(Contact2DType.END_CONTACT, this.onCollisionOtherExit, this);            
         }
 
         if(this.colliderAllow){
             // 监听碰撞开始（BEGIN_CONTACT）
-            this.colliderAllow.on(Contact2DType.BEGIN_CONTACT, this.onCollisionAllowEnter, this);      
+            this.colliderAllow.off(Contact2DType.BEGIN_CONTACT, this.onCollisionAllowEnter, this);      
             // 监听碰撞结束（END_CONTACT）            
-            this.colliderAllow.on(Contact2DType.END_CONTACT, this.onCollisionAllowExit, this);            
+            this.colliderAllow.off(Contact2DType.END_CONTACT, this.onCollisionAllowExit, this);            
         }
         
-         input.off(Input.EventType.KEY_DOWN,this.Key_Down,this)
+        input.off(Input.EventType.KEY_DOWN,this.Key_Down,this)
     }
 
     private initNode(){
